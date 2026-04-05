@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProfileHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#08090c;
+  --ink2:#0e1018;
+  --ink3:#161822;
+  --ink4:#1e2130;
+  --chalk:#f8f9fc;
+  --chalk2:#e8eaf2;
+  --chalk3:#c8ccd8;
+  --blue:#3b6fff;
+  --blue2:#5a85ff;
+  --blue3:rgba(59,111,255,0.12);
+  --border:rgba(255,255,255,0.06);
+  --border2:rgba(255,255,255,0.12);
+  --muted:#7a7f96;
+  --danger:#e05555;
+  --success:#2ecc7a;
+  --font-h:'Playfair Display',serif;
+  --font:'Inter',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--ink);color:var(--chalk);min-height:100vh;line-height:1.6;overflow-x:hidden}
+
+/* ── TREES (fixed bg layer) ── */
+#treeBg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+
+/* ── NAV ── */
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 3rem;height:66px;
+  border-bottom:1px solid var(--border);
+  background:rgba(8,9,12,0.94);
+  backdrop-filter:blur(24px);
+  position:sticky;top:0;z-index:500;
+}
+.logo{
+  font-family:var(--font-h);font-size:1.25rem;font-weight:900;
+  color:var(--chalk);letter-spacing:-0.02em;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+}
+.logo-mark{
+  width:28px;height:28px;border-radius:6px;
+  background:var(--blue);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.logo-mark svg{width:14px;height:14px;fill:white}
+.nav-r{display:flex;align-items:center;gap:8px}
+.nav-pfp-img{width:34px;height:34px;border-radius:50%;border:2px solid var(--blue);object-fit:cover;display:none;cursor:pointer;background:var(--ink3)}
+.nav-pfp-img.vis{display:block}
+.nav-pfp-ph{width:34px;height:34px;border-radius:50%;border:2px solid var(--border2);background:var(--ink3);display:none;align-items:center;justify-content:center;cursor:pointer}
+.nav-pfp-ph svg{width:16px;height:16px;fill:var(--muted)}
+.nav-pfp-ph.vis{display:flex}
+
+/* ── UNSAVED ── */
+#unsaved{
+  display:none;position:sticky;top:66px;z-index:400;
+  background:rgba(59,111,255,0.08);
+  border-bottom:1px solid rgba(59,111,255,0.2);
+  padding:10px 3rem;align-items:center;justify-content:space-between;gap:12px;
+}
+#unsaved.on{display:flex}
+.u-dot{width:6px;height:6px;border-radius:50%;background:var(--blue2);animation:blink 1.6s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.u-text{font-size:0.8rem;color:var(--blue2);display:flex;align-items:center;gap:8px}
+.u-btns{display:flex;gap:8px}
+
+/* ── PAGES ── */
+.page{display:none;position:relative;z-index:1}
+.page.active{display:block}
+
+/* ── BUTTONS ── */
+.btn{
+  font-family:var(--font);font-size:0.82rem;font-weight:500;
+  padding:9px 20px;border-radius:8px;border:1px solid var(--border2);
+  background:var(--ink3);color:var(--chalk);cursor:pointer;
+  transition:all 0.15s;display:inline-flex;align-items:center;gap:7px;
+  letter-spacing:0.01em;white-space:nowrap;
+}
+.btn:hover{background:var(--ink4);border-color:rgba(255,255,255,0.2)}
+.btn:active{transform:scale(0.97)}
+.btn-blue{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-blue:hover{background:var(--blue2);border-color:var(--blue2)}
+.btn-white{background:var(--chalk);border-color:var(--chalk);color:var(--ink)}
+.btn-white:hover{background:var(--chalk2);border-color:var(--chalk2)}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn-ghost:hover{color:var(--chalk);background:var(--ink3)}
+.btn-danger{background:transparent;border-color:rgba(224,85,85,0.4);color:#e08080}
+.btn-danger:hover{background:rgba(224,85,85,0.08)}
+.btn-sm{font-size:0.78rem;padding:6px 14px}
+.btn-full{width:100%;justify-content:center}
+.mt1{margin-top:1rem}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── FIELDS ── */
+.f{margin-bottom:1rem}
+.f label{display:block;font-size:0.7rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px}
+.f input,.f textarea{
+  width:100%;background:var(--ink3);border:1px solid var(--border2);
+  border-radius:8px;padding:10px 14px;color:var(--chalk);
+  font-family:var(--font);font-size:0.9rem;outline:none;
+  transition:border-color 0.15s;
+}
+.f input:focus,.f textarea:focus{border-color:var(--blue)}
+.f input::placeholder,.f textarea::placeholder{color:var(--muted)}
+.f textarea{resize:vertical;min-height:80px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+
+/* ══════════════════════
+   HOME PAGE
+══════════════════════ */
+#page-home{min-height:calc(100vh - 66px)}
+.home-inner{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:calc(100vh - 66px);text-align:center;padding:4rem 2rem;
+  position:relative;z-index:2;
+}
+.home-eyebrow{
+  font-size:0.72rem;font-weight:600;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--blue2);margin-bottom:1.5rem;
+}
+.home-h{
+  font-family:var(--font-h);font-size:clamp(2.8rem,5.5vw,5rem);
+  font-weight:900;letter-spacing:-0.03em;line-height:1.06;
+  margin-bottom:1.5rem;max-width:720px;
+}
+.home-h span{color:var(--blue2)}
+.home-sub{font-size:1rem;color:var(--muted);max-width:420px;margin:0 auto 2.5rem;line-height:1.8}
+.home-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.home-feats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;
+  margin-top:5rem;max-width:660px;width:100%;
+}
+.feat{
+  background:var(--ink2);border:1px solid var(--border);border-radius:12px;
+  padding:1.5rem;text-align:left;
+}
+.feat-h{font-size:0.875rem;font-weight:600;color:var(--chalk);margin-bottom:4px}
+.feat-p{font-size:0.78rem;color:var(--muted);line-height:1.6}
+.feat-line{width:24px;height:2px;background:var(--blue);margin-bottom:12px;border-radius:2px}
+
+/* trees scene at bottom of home */
+.scene{position:absolute;bottom:0;left:0;right:0;pointer-events:none;z-index:1;overflow:hidden}
+
+/* ══════════════════════
+   AUTH PAGE
+══════════════════════ */
+#page-auth{min-height:calc(100vh - 66px)}
+.auth-wrap{min-height:calc(100vh - 66px);display:flex;align-items:center;justify-content:center;padding:2rem;position:relative}
+.auth-box{
+  width:100%;max-width:420px;
+  background:var(--ink2);border:1px solid var(--border2);
+  border-radius:20px;padding:2.75rem;position:relative;z-index:2;
+}
+.auth-h{font-family:var(--font-h);font-size:1.75rem;font-weight:900;letter-spacing:-0.02em;margin-bottom:0.3rem}
+.auth-sub{font-size:0.875rem;color:var(--muted);margin-bottom:2rem}
+.auth-err{color:#e08080;font-size:0.8rem;margin-top:0.5rem;display:none}
+.auth-switch{text-align:center;margin-top:1.5rem;font-size:0.85rem;color:var(--muted)}
+.auth-switch a{color:var(--blue2);cursor:pointer}
+.auth-switch a:hover{text-decoration:underline}
+.divider{height:1px;background:var(--border);margin:1.5rem 0}
+
+/* ══════════════════════
+   DASHBOARD
+══════════════════════ */
+#page-dashboard{max-width:860px;margin:0 auto;padding:2.5rem 2rem}
+.dash-top{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;margin-bottom:2rem;
+  padding-bottom:1.5rem;border-bottom:1px solid var(--border);
+}
+.dash-h{font-family:var(--font-h);font-size:1.6rem;font-weight:900;letter-spacing:-0.02em}
+.dash-sub{font-size:0.8rem;color:var(--muted);margin-top:4px}
+.dash-sub b{color:var(--blue2);font-weight:500}
+.card{
+  background:var(--ink2);border:1px solid var(--border);
+  border-radius:14px;padding:1.75rem;margin-bottom:1.25rem;
+}
+.card-lbl{
+  font-size:0.68rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.14em;color:var(--muted);
+  margin-bottom:1.25rem;display:flex;align-items:center;gap:10px;
+}
+.card-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* banner drop */
+.banner-drop{
+  width:100%;height:140px;border-radius:10px;
+  border:1.5px dashed var(--border2);background:var(--ink3);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;overflow:hidden;transition:border-color 0.2s,background 0.2s;
+  margin-bottom:1rem;
+}
+.banner-drop:hover{border-color:var(--blue);background:var(--blue3)}
+.banner-drop img{width:100%;height:100%;object-fit:cover}
+.banner-ph{text-align:center;color:var(--muted);pointer-events:none}
+.banner-ph-icon{
+  width:36px;height:36px;border-radius:8px;background:var(--ink4);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 8px;
+}
+.banner-ph-icon svg{width:16px;height:16px;fill:var(--muted)}
+.banner-ph p{font-size:0.78rem}
+
+/* pfp */
+.pfp-row{display:flex;align-items:center;gap:1.5rem;margin-bottom:1.25rem}
+.pfp-circle{
+  width:76px;height:76px;border-radius:50%;
+  background:var(--ink3);border:1.5px dashed var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;overflow:hidden;transition:border-color 0.2s;flex-shrink:0;
+}
+.pfp-circle:hover{border-color:var(--blue)}
+.pfp-circle svg{width:28px;height:28px;fill:var(--muted)}
+.pfp-circle img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.pfp-lbl{font-size:0.875rem;font-weight:500;margin-bottom:4px}
+.pfp-hint{font-size:0.74rem;color:var(--muted);margin-bottom:10px}
+
+/* links */
+.link-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--ink3);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;margin-bottom:8px;
+  transition:border-color 0.15s;cursor:grab;user-select:none;
+}
+.link-row:hover{border-color:var(--border2)}
+.link-row.dragging{opacity:0.3}
+.link-row.dragover{border-color:var(--blue);background:var(--blue3)}
+.drag-h{color:var(--muted);font-size:1.1rem;cursor:grab;flex-shrink:0;line-height:1}
+.link-body{flex:1;min-width:0}
+.link-name{font-size:0.875rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.link-href{font-size:0.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.link-acts{display:flex;gap:4px}
+.ib{background:none;border:none;color:var(--muted);cursor:pointer;padding:5px 6px;border-radius:6px;transition:color 0.15s,background 0.15s;display:flex;align-items:center}
+.ib svg{width:14px;height:14px;fill:currentColor}
+.ib:hover{color:var(--chalk);background:var(--ink4)}
+.ib.x:hover{color:#e08080}
+.add-form{display:none;background:var(--blue3);border:1px solid rgba(59,111,255,0.25);border-radius:8px;padding:1rem;margin-top:10px}
+.add-form.open{display:block}
+
+/* colors */
+.col-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem}
+.cpick{display:flex;align-items:center;gap:10px}
+.cpick input[type=color]{width:36px;height:36px;border:none;border-radius:8px;background:none;cursor:pointer;padding:0}
+.cpick label{font-size:0.8rem;color:var(--muted)}
+.presets{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.pdot{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.15s,border-color 0.15s}
+.pdot:hover{transform:scale(1.2)}
+.pdot.on{border-color:var(--blue)}
+
+/* music */
+.music-box{background:var(--ink3);border:1px solid var(--border2);border-radius:10px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem}
+.music-meta{flex:1;min-width:0}
+.music-name{font-size:0.875rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music-hint{font-size:0.72rem;color:var(--muted);margin-top:2px}
+.play-btn{
+  width:38px;height:38px;border-radius:50%;border:none;
+  background:var(--blue);color:#fff;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.15s;
+}
+.play-btn:hover{background:var(--blue2)}
+.play-btn:disabled{opacity:0.35;cursor:default}
+.play-btn svg{width:14px;height:14px;fill:white}
+.vol-row{display:flex;align-items:center;gap:8px;width:100%;margin-top:8px}
+.vol-row input[type=range]{flex:1;accent-color:var(--blue)}
+.vol-row label{font-size:0.72rem;color:var(--muted);white-space:nowrap}
+
+/* share box */
+.share-box{
+  background:var(--ink3);border:1px solid var(--border2);border-radius:8px;
+  display:flex;align-items:center;overflow:hidden;margin-top:0.75rem;
+}
+.share-box span{flex:1;padding:11px 14px;font-size:0.82rem;color:var(--blue2);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.share-btn{background:var(--blue);color:#fff;border:none;padding:11px 20px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:background 0.15s;white-space:nowrap}
+.share-btn:hover{background:var(--blue2)}
+.share-note{font-size:0.72rem;color:var(--muted);margin-top:7px;line-height:1.6}
+
+/* ══════════════════════
+   PUBLIC PROFILE
+══════════════════════ */
+#page-profile{min-height:100vh}
+.pub-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;position:relative;overflow-x:hidden}
+.pub-banner{width:100%;height:220px;object-fit:cover;display:block;flex-shrink:0}
+.pub-banner-ph{width:100%;height:220px;flex-shrink:0}
+.pub-card{width:100%;max-width:520px;text-align:center;padding:0 1.5rem 6rem;position:relative;z-index:2}
+.pub-pfp{
+  width:110px;height:110px;border-radius:50%;
+  margin:0 auto;margin-top:-55px;margin-bottom:1.25rem;
+  border:5px solid var(--ink);overflow:hidden;
+  background:var(--ink3);display:flex;align-items:center;justify-content:center;
+}
+.pub-pfp svg{width:40px;height:40px;fill:var(--muted)}
+.pub-pfp img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.pub-name{font-family:var(--font-h);font-size:1.9rem;font-weight:900;letter-spacing:-0.02em;margin-bottom:0.5rem}
+.pub-bio{font-size:0.9rem;line-height:1.8;max-width:380px;margin:0 auto 2rem;opacity:0.65}
+.pub-links{display:flex;flex-direction:column;gap:10px}
+.pub-link-btn{
+  display:block;padding:15px 28px;border-radius:10px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.05);
+  font-family:var(--font);font-size:0.95rem;font-weight:500;
+  text-decoration:none;text-align:center;
+  transition:all 0.2s ease;
+}
+.pub-link-btn:hover{background:rgba(255,255,255,0.1);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.pub-footer{margin-top:3.5rem;font-size:0.72rem;opacity:0.2}
+.pub-footer a{text-decoration:none}
+
+/* SHARE BAR - shown on published profile */
+.pub-share-bar{
+  position:fixed;bottom:76px;left:50%;transform:translateX(-50%);
+  background:rgba(8,9,12,0.94);backdrop-filter:blur(24px);
+  border:1px solid var(--border2);border-radius:50px;
+  padding:8px 8px 8px 22px;display:flex;align-items:center;gap:10px;
+  z-index:300;max-width:min(440px,92vw);width:100%;
+  box-shadow:0 16px 48px rgba(0,0,0,0.7);
+}
+.pub-share-url{flex:1;font-size:0.78rem;color:var(--blue2);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pub-share-copy{background:var(--blue);color:#fff;border:none;border-radius:40px;padding:7px 18px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:background 0.15s;white-space:nowrap}
+.pub-share-copy:hover{background:var(--blue2)}
+
+/* MUSIC BAR */
+.pub-music-bar{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:rgba(8,9,12,0.94);backdrop-filter:blur(24px);
+  border:1px solid var(--border2);border-radius:50px;
+  padding:9px 18px 9px 10px;display:flex;align-items:center;gap:12px;
+  z-index:300;max-width:min(320px,90vw);
+  box-shadow:0 16px 48px rgba(0,0,0,0.7);
+}
+.pub-play{width:32px;height:32px;border-radius:50%;border:none;background:var(--blue);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.15s}
+.pub-play:hover{background:var(--blue2)}
+.pub-play svg{width:12px;height:12px;fill:white}
+.pub-track{font-size:0.75rem;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pub-vol{width:68px;accent-color:var(--blue)}
+
+/* TREES in profile */
+.pub-scene{position:absolute;bottom:0;left:0;right:0;pointer-events:none;z-index:1;overflow:hidden}
+
+/* ══════════════════════
+   MODAL
+══════════════════════ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;padding:1rem}
+.overlay.on{display:flex}
+.modal{background:var(--ink2);border:1px solid var(--border2);border-radius:16px;padding:2rem;width:100%;max-width:440px;animation:pop 0.2s ease}
+@keyframes pop{from{opacity:0;transform:scale(0.94)}to{opacity:1;transform:scale(1)}}
+.modal-h{font-family:var(--font-h);font-size:1.15rem;font-weight:900;margin-bottom:1.25rem}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
+
+/* TOAST */
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink3);border:1px solid var(--border2);border-radius:8px;padding:10px 22px;font-size:0.82rem;z-index:3000;transition:transform 0.25s ease;pointer-events:none;white-space:nowrap}
+#toast.on{transform:translateX(-50%) translateY(0)}
+#toast.ok{border-color:rgba(46,204,122,0.5);color:#2ecc7a}
+#toast.bad{border-color:rgba(224,85,85,0.5);color:#e08080}
+
+@media(max-width:680px){
+  nav{padding:0 1.25rem}
+  #page-dashboard{padding:1.25rem}
+  .f2{grid-template-columns:1fr}
+  .dash-top{flex-direction:column}
+  .home-feats{grid-template-columns:1fr}
+  .home-h{font-size:2.5rem}
+}
+</style>
+</head>
+<body>
+
+<!-- TREE BG -->
+<div id="treeBg"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="goHome()">
+    <div class="logo-mark">
+      <svg viewBox="0 0 14 14"><path d="M7 1L1 13h12L7 1z"/></svg>
+    </div>
+    ProfileHub
+  </div>
+  <div class="nav-r" id="navAuth">
+    <button class="btn btn-ghost" onclick="showLogin()">Log in</button>
+    <button class="btn btn-blue" onclick="showSignup()">Sign up</button>
+  </div>
+  <div class="nav-r" id="navDash" style="display:none">
+    <img id="navPfpImg" class="nav-pfp-img" src="" onclick="toDash()" alt="Profile">
+    <div id="navPfpPh" class="nav-pfp-ph" onclick="toDash()">
+      <svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4"/><path d="M2 18c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </div>
+    <button class="btn btn-ghost" id="navPreviewBtn" onclick="viewProfile()" style="display:none">Preview</button>
+    <button class="btn btn-ghost" id="navBackBtn" onclick="toDash()" style="display:none">Back to dashboard</button>
+    <button class="btn btn-ghost" onclick="doLogout()">Log out</button>
+  </div>
+</nav>
+
+<!-- UNSAVED BANNER -->
+<div id="unsaved">
+  <div class="u-text"><span class="u-dot"></span>You have unsaved changes</div>
+  <div class="u-btns">
+    <button class="btn btn-ghost btn-sm" onclick="doDiscard()">Discard</button>
+    <button class="btn btn-blue btn-sm" onclick="doSave()">Save changes</button>
+  </div>
+</div>
+
+<!-- ═══════════ HOME ═══════════ -->
+<div id="page-home" class="page active">
+  <div class="home-inner">
+    <div class="home-eyebrow">Your link in bio, redesigned</div>
+    <h1 class="home-h">One link.<br><span>Your entire world.</span></h1>
+    <p class="home-sub">Create a beautiful profile page that holds all your links, music, and identity. Share it with one clean URL.</p>
+    <div class="home-btns">
+      <button class="btn btn-white" style="padding:12px 32px;font-size:0.95rem" onclick="showSignup()">Create your page</button>
+      <button class="btn btn-ghost" style="padding:12px 32px;font-size:0.95rem;border-color:var(--border2)" onclick="loadDemo()">View demo</button>
+    </div>
+    <div class="home-feats">
+      <div class="feat">
+        <div class="feat-line"></div>
+        <div class="feat-h">Background music</div>
+        <div class="feat-p">Let visitors feel your vibe with a looping audio track</div>
+      </div>
+      <div class="feat">
+        <div class="feat-line"></div>
+        <div class="feat-h">Banner and photo</div>
+        <div class="feat-p">Full-width banner image with your profile photo overlaid</div>
+      </div>
+      <div class="feat">
+        <div class="feat-line"></div>
+        <div class="feat-h">One shareable link</div>
+        <div class="feat-p">Everything from a single URL, no login required to view</div>
+      </div>
+    </div>
+  </div>
+  <div class="scene" id="homeScene"></div>
+</div>
+
+<!-- ═══════════ AUTH ═══════════ -->
+<div id="page-auth" class="page">
+  <div class="auth-wrap">
+    <div class="scene" id="authScene" style="height:240px;position:absolute;bottom:0;left:0;right:0"></div>
+    <div class="auth-box">
+      <div class="auth-h" id="authH">Welcome back</div>
+      <div class="auth-sub" id="authSub">Sign in to manage your profile</div>
+
+      <div id="unameWrap" class="f" style="display:none">
+        <label>Username</label>
+        <input type="text" id="unameIn" placeholder="yourname" maxlength="24" oninput="prevUname()">
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:5px">Your link: <span id="unamePrev" style="color:var(--blue2)"></span></div>
+      </div>
+      <div class="f">
+        <label>Email</label>
+        <input type="email" id="authEmail" placeholder="you@example.com">
+      </div>
+      <div class="f">
+        <label>Password</label>
+        <input type="password" id="authPass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doAuth()">
+      </div>
+      <div class="auth-err" id="authErr"></div>
+      <button class="btn btn-blue btn-full mt1" onclick="doAuth()" id="authBtn">Sign in</button>
+      <div class="auth-switch">
+        <span id="switchTxt">No account? </span>
+        <a id="switchLnk" onclick="flipAuth()">Create one free</a>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-ghost btn-full" onclick="loadDemo()" style="font-size:0.8rem">Try the demo profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ DASHBOARD ═══════════ -->
+<div id="page-dashboard" class="page">
+  <div class="dash-top">
+    <div>
+      <div class="dash-h">Your Profile</div>
+      <div class="dash-sub">Editing <b id="dashUser">@username</b></div>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="viewProfile()">Preview</button>
+      <button class="btn btn-blue" onclick="doSave()">Save and copy link</button>
+    </div>
+  </div>
+
+  <!-- PHOTOS -->
+  <div class="card">
+    <div class="card-lbl">Photos</div>
+    <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:8px">Banner</div>
+    <div class="banner-drop" id="bannerDrop" onclick="document.getElementById('bannerFile').click()">
+      <img id="bannerImg" src="" style="display:none" alt="banner">
+      <div id="bannerPh" class="banner-ph">
+        <div class="banner-ph-icon">
+          <svg viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="12" rx="2" stroke-width="1.5" stroke="currentColor" fill="none"/><circle cx="7" cy="9" r="1.5"/><path d="M2 14l4-4 3 3 3-3 4 4"/></svg>
+        </div>
+        <p>Click to upload banner image (max 3MB)</p>
+      </div>
+    </div>
+    <div class="row" style="margin-bottom:1.5rem">
+      <button class="btn btn-sm" onclick="document.getElementById('bannerFile').click()">Upload banner</button>
+      <button class="btn btn-sm btn-ghost" onclick="rmBanner()">Remove</button>
+    </div>
+    <input type="file" id="bannerFile" accept="image/*" style="display:none" onchange="onBanner(event)">
+
+    <div class="pfp-row">
+      <div class="pfp-circle" id="pfpCircle" onclick="document.getElementById('pfpFile').click()">
+        <svg id="pfpIcon" viewBox="0 0 20 20"><circle cx="10" cy="7" r="4"/><path d="M2 18c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <img id="pfpImg" src="" style="display:none" alt="avatar">
+      </div>
+      <div>
+        <div class="pfp-lbl">Profile photo</div>
+        <div class="pfp-hint">Shown on your profile and as a mini icon in the nav</div>
+        <div class="row">
+          <button class="btn btn-sm" onclick="document.getElementById('pfpFile').click()">Upload photo</button>
+          <button class="btn btn-sm btn-ghost" onclick="rmPfp()">Remove</button>
+        </div>
+      </div>
+      <input type="file" id="pfpFile" accept="image/*" style="display:none" onchange="onPfp(event)">
+    </div>
+
+    <div class="f">
+      <label>Display name</label>
+      <input type="text" id="fName" placeholder="Your Name" maxlength="32" oninput="markDirty()">
+    </div>
+    <div class="f">
+      <label>Bio — <span id="bioCount" style="font-weight:400;text-transform:none;letter-spacing:0">0</span>/200</label>
+      <textarea id="fBio" placeholder="A short intro about yourself..." maxlength="200" rows="3" oninput="cntBio();markDirty()"></textarea>
+    </div>
+  </div>
+
+  <!-- LINKS -->
+  <div class="card">
+    <div class="card-lbl">Links</div>
+    <div id="linksList"></div>
+    <button class="btn mt1" onclick="toggleAddForm()">Add link</button>
+    <div class="add-form" id="addForm">
+      <div class="f2">
+        <div class="f" style="margin:0"><label>Title</label><input type="text" id="newTitle" placeholder="YouTube" maxlength="32"></div>
+        <div class="f" style="margin:0"><label>URL</label><input type="text" id="newUrl" placeholder="https://" onkeydown="if(event.key==='Enter')addLink()"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="toggleAddForm()">Cancel</button>
+        <button class="btn btn-blue btn-sm" onclick="addLink()">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MUSIC -->
+  <div class="card">
+    <div class="card-lbl">Background music</div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.7">Upload an MP3, WAV, or OGG file (max 10MB). A floating player bar will appear at the bottom of your public profile.</p>
+    <div class="music-box">
+      <div class="music-meta">
+        <div class="music-name" id="musicName">No music uploaded</div>
+        <div class="music-hint" id="musicHint">Upload a file below to add background music</div>
+      </div>
+      <button class="play-btn" id="dashPlayBtn" onclick="toggleDashPlay()" disabled>
+        <svg id="dashPlayIcon" viewBox="0 0 14 14"><polygon points="3,1 13,7 3,13"/></svg>
+      </button>
+    </div>
+    <div class="vol-row">
+      <label>Volume</label>
+      <input type="range" id="dashVol" min="0" max="100" value="60" oninput="setDashVol(this.value)">
+      <span id="dashVolVal" style="font-size:0.72rem;color:var(--muted);min-width:30px">60%</span>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" onclick="document.getElementById('musicFile').click()">Upload music</button>
+      <button class="btn btn-ghost" onclick="rmMusic()">Remove</button>
+      <input type="file" id="musicFile" accept="audio/*" style="display:none" onchange="onMusic(event)">
+    </div>
+    <audio id="dashAudio" loop></audio>
+  </div>
+
+  <!-- APPEARANCE -->
+  <div class="card">
+    <div class="card-lbl">Appearance</div>
+    <div class="col-grid">
+      <div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">Background color</div>
+        <div class="cpick"><input type="color" id="cBg" value="#08090c" oninput="markDirty()"><label>Custom</label></div>
+        <div class="presets" id="presets"></div>
+      </div>
+      <div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">Text color</div>
+        <div class="cpick"><input type="color" id="cText" value="#f8f9fc" oninput="markDirty()"><label>Custom</label></div>
+      </div>
+      <div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">Button color</div>
+        <div class="cpick"><input type="color" id="cBtn" value="#3b6fff" oninput="markDirty()"><label>Custom</label></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARE -->
+  <div class="card">
+    <div class="card-lbl">Share your profile</div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem">Anyone who opens this link lands directly on your public profile:</p>
+    <div class="share-box">
+      <span id="shareLinkDisp">profilehub.app/#username</span>
+      <button class="share-btn" onclick="copyLink()">Copy link</button>
+    </div>
+    <p class="share-note">Hitting "Save and copy link" automatically copies this to your clipboard every time.</p>
+    <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)">
+      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:10px">Deploy to your own domain:</p>
+      <div class="row">
+        <button class="btn" onclick="exportHTML()">Download HTML</button>
+        <button class="btn" onclick="openModal('deployModal')">GitHub Pages guide</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PUBLIC PROFILE ═══════════ -->
+<div id="page-profile" class="page">
+  <div class="pub-wrap" id="pubWrap">
+    <img id="pubBannerImg" class="pub-banner" src="" style="display:none" alt="Banner">
+    <div id="pubBannerPh" class="pub-banner-ph"></div>
+
+    <div class="pub-card">
+      <div class="pub-pfp" id="pubPfp">
+        <svg id="pubPfpIcon" viewBox="0 0 20 20"><circle cx="10" cy="7" r="4"/><path d="M2 18c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <img id="pubPfpImg" src="" style="display:none" alt="Avatar">
+      </div>
+      <div class="pub-name" id="pubName">Username</div>
+      <div class="pub-bio" id="pubBio"></div>
+      <div class="pub-links" id="pubLinks"></div>
+      <div class="pub-footer"><a href="#" onclick="goHome()" id="pubFooterLink">Powered by ProfileHub</a></div>
+    </div>
+
+    <div class="pub-scene" id="pubScene"></div>
+  </div>
+
+  <!-- SHARE BAR (only link, big and obvious) -->
+  <div class="pub-share-bar" id="pubShareBar" style="display:none">
+    <span class="pub-share-url" id="pubShareUrl"></span>
+    <button class="pub-share-copy" onclick="copyPubLink()">Copy link</button>
+  </div>
+
+  <!-- MUSIC BAR -->
+  <div class="pub-music-bar" id="pubMusicBar" style="display:none">
+    <button class="pub-play" id="pubPlayBtn" onclick="togglePubPlay()">
+      <svg id="pubPlayIcon" viewBox="0 0 14 14"><polygon points="3,1 13,7 3,13"/></svg>
+    </button>
+    <span class="pub-track" id="pubTrack">Music</span>
+    <input type="range" class="pub-vol" id="pubVol" min="0" max="100" value="60" oninput="setPubVol(this.value)">
+    <audio id="pubAudio" loop></audio>
+  </div>
+</div>
+
+<!-- EDIT LINK MODAL -->
+<div class="overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-h">Edit link</div>
+    <input type="hidden" id="editIdx">
+    <div class="f"><label>Title</label><input type="text" id="editTitle" maxlength="32"></div>
+    <div class="f"><label>URL</label><input type="text" id="editUrl"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn btn-blue" onclick="saveEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEPLOY MODAL -->
+<div class="overlay" id="deployModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-h">Deploy to GitHub Pages</div>
+    <div style="font-size:0.84rem;line-height:1.9;color:var(--muted)">
+      <ol style="padding-left:1.25rem;display:flex;flex-direction:column;gap:8px">
+        <li>Click <strong style="color:var(--chalk)">Download HTML</strong> and save as <code style="background:var(--ink3);padding:2px 7px;border-radius:4px;font-size:0.78rem">index.html</code></li>
+        <li>Create a new <strong style="color:var(--chalk)">GitHub repo</strong> (example: <code style="background:var(--ink3);padding:2px 7px;border-radius:4px;font-size:0.78rem">my-profile</code>)</li>
+        <li>Upload <code style="background:var(--ink3);padding:2px 7px;border-radius:4px;font-size:0.78rem">index.html</code> to the root of the repo</li>
+        <li>Go to <strong style="color:var(--chalk)">Settings then Pages</strong>, set source to main branch</li>
+        <li>Your profile is live at <strong style="color:var(--blue2)">yourusername.github.io/my-profile</strong></li>
+        <li>For a custom domain, add it in Settings then Pages then Custom domain</li>
+      </ol>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('deployModal')">Close</button>
+      <button class="btn btn-blue" onclick="exportHTML();closeModal('deployModal')">Download HTML</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════
+//  TREES
+// ════════════════════════════════════════
+function drawTrees(id, count, maxH) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const W = Math.max(window.innerWidth, 800);
+  const H = maxH + 20;
+  const pine = (x, h, op) => {
+    const b = h * 0.18, tr = h * 0.2;
+    return `<g opacity="${op}" fill="rgba(255,255,255,0.55)">
+      <rect x="${x-b*0.13}" y="${H-tr}" width="${b*0.26}" height="${tr}"/>
+      <polygon points="${x},${H-tr-h*0.55} ${x-b},${H-tr} ${x+b},${H-tr}"/>
+      <polygon points="${x},${H-tr-h*0.78} ${x-b*.75},${H-tr-h*0.32} ${x+b*.75},${H-tr-h*0.32}"/>
+      <polygon points="${x},${H-tr-h} ${x-b*.48},${H-tr-h*.55} ${x+b*.48},${H-tr-h*.55}"/>
+    </g>`;
+  };
+  const bare = (x, h, op) => {
+    const tr = h * 0.3, sw = Math.max(h*0.035, 1.5);
+    const bx = (a, l, px, py) => {
+      const ex = px + Math.cos(a*Math.PI/180)*l, ey = py - Math.sin(a*Math.PI/180)*l;
+      const ex2a = ex + Math.cos((a+40)*Math.PI/180)*l*0.5, ey2a = ey - Math.sin((a+40)*Math.PI/180)*l*0.5;
+      const ex2b = ex + Math.cos((a-40)*Math.PI/180)*l*0.5, ey2b = ey - Math.sin((a-40)*Math.PI/180)*l*0.5;
+      return `<line x1="${px}" y1="${py}" x2="${ex}" y2="${ey}" stroke-width="1.2"/>
+        <line x1="${ex}" y1="${ey}" x2="${ex2a}" y2="${ey2a}" stroke-width="0.8"/>
+        <line x1="${ex}" y1="${ey}" x2="${ex2b}" y2="${ey2b}" stroke-width="0.8"/>`;
+    };
+    const top = H - tr - h * 0.65;
+    return `<g opacity="${op}" stroke="rgba(255,255,255,0.55)" fill="rgba(255,255,255,0.55)" stroke-linecap="round">
+      <rect x="${x-sw/2}" y="${H-tr}" width="${sw}" height="${tr}"/>
+      <line x1="${x}" y1="${H-tr}" x2="${x}" y2="${top}" stroke-width="${sw}"/>
+      ${bx(125, h*0.27, x, top+h*0.08)}
+      ${bx(58,  h*0.27, x, top+h*0.08)}
+      ${bx(118, h*0.19, x, top+h*0.26)}
+      ${bx(65,  h*0.19, x, top+h*0.26)}
+    </g>`;
+  };
+  let svg = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" style="display:block">`;
+  for (let i = 0; i < count; i++) {
+    const xBase = (W / (count - 1 || 1)) * i;
+    const x = Math.min(Math.max(xBase + (Math.random() - 0.5) * 100, 50), W - 50);
+    const h = maxH * 0.45 + Math.random() * maxH * 0.55;
+    const op = 0.35 + Math.random() * 0.5;
+    svg += (i % 2 === 0) ? pine(x, h, op) : bare(x, h, op);
+  }
+  svg += '</svg>';
+  el.innerHTML = svg;
+}
+
+// ════════════════════════════════════════
+//  STATE — no variable named "dirty" to avoid conflict
+// ════════════════════════════════════════
+const SK = 'ph4_data', UK = 'ph4_users';
+let CU   = null;       // current user {email, username}
+let hasUnsaved = false;
+let loginMode  = true;
+let P = { name:'', bio:'', pfp:'', banner:'', music:'', musicFile:'', links:[], bg:'#08090c', tc:'#f8f9fc', bc:'#3b6fff' };
+const PRESETS = ['#08090c','#0d1117','#10080e','#080e18','#0a100a','#12080a','#0a0a12','#14120a','#080c14','#0e0e0e'];
+
+// ════════════════════════════════════════
+//  BOOT
+// ════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  drawTrees('treeBg',    16, 220);
+  drawTrees('homeScene', 14, 260);
+  drawTrees('authScene', 10, 220);
+  drawTrees('pubScene',  18, 280);
+  buildPresets();
+
+  var hash = location.hash.replace('#','').trim();
+  if (hash && loadPublicProfile(hash)) return;
+
+  var sess = sessionStorage.getItem('ph_sess');
+  if (sess) { try { CU = JSON.parse(sess); } catch(e) { CU = null; } }
+  if (CU) { loadData(); showDash(); return; }
+  showPage('home');
+});
+
+window.addEventListener('hashchange', function() {
+  var h = location.hash.replace('#','').trim();
+  if (h) loadPublicProfile(h);
+});
+
+function loadPublicProfile(username) {
+  var users = getUsers();
+  var found = null;
+  Object.entries(users).forEach(function(e) { if (e[1].username === username) found = e[0]; });
+  if (!found) return false;
+  var raw = localStorage.getItem(dkey(found));
+  if (!raw) return false;
+  try {
+    var data = JSON.parse(raw);
+    renderPub(data, username);
+    showPage('profile');
+    document.getElementById('navAuth').style.display = CU ? 'none' : 'flex';
+    document.getElementById('navDash').style.display = CU ? 'flex' : 'none';
+    if (CU) {
+      document.getElementById('navPreviewBtn').style.display = 'none';
+      document.getElementById('navBackBtn').style.display = 'inline-flex';
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+function profileUrl(u) { return location.href.split('#')[0] + '#' + (u || ''); }
+
+// ════════════════════════════════════════
+//  STORAGE
+// ════════════════════════════════════════
+function getUsers() { try { return JSON.parse(localStorage.getItem(UK) || '{}'); } catch(e) { return {}; } }
+function putUsers(u) { localStorage.setItem(UK, JSON.stringify(u)); }
+function dkey(e) { return SK + '_' + e; }
+
+function loadData() {
+  var raw = localStorage.getItem(dkey(CU.email));
+  if (raw) { try { P = Object.assign({}, P, JSON.parse(raw)); } catch(e) {} }
+  syncForm();
+  hasUnsaved = false;
+  updUnsaved();
+  updShareDisp();
+}
+
+function syncForm() {
+  document.getElementById('fName').value = P.name || '';
+  document.getElementById('fBio').value  = P.bio  || '';
+  document.getElementById('cBg').value   = P.bg   || '#08090c';
+  document.getElementById('cText').value = P.tc   || '#f8f9fc';
+  document.getElementById('cBtn').value  = P.bc   || '#3b6fff';
+  document.getElementById('dashUser').textContent = '@' + (CU ? CU.username : '');
+  cntBio(); renderPfpDash(); renderBannerDash(); renderLinks();
+  renderNavPfp(); renderMusicDash(); hiPreset(); updShareDisp();
+}
+
+function collectForm() {
+  P.name = document.getElementById('fName').value.trim();
+  P.bio  = document.getElementById('fBio').value.trim();
+  P.bg   = document.getElementById('cBg').value;
+  P.tc   = document.getElementById('cText').value;
+  P.bc   = document.getElementById('cBtn').value;
+}
+
+function storeData() { if (!CU) return; localStorage.setItem(dkey(CU.email), JSON.stringify(P)); }
+
+function updShareDisp() {
+  var u = CU ? CU.username : 'username';
+  var el = document.getElementById('shareLinkDisp');
+  if (el) el.textContent = profileUrl(u);
+}
+
+// ════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════
+function flipAuth() {
+  loginMode = !loginMode;
+  document.getElementById('authH').textContent    = loginMode ? 'Welcome back' : 'Create account';
+  document.getElementById('authSub').textContent  = loginMode ? 'Sign in to manage your profile' : 'Choose a username and get started';
+  document.getElementById('authBtn').textContent  = loginMode ? 'Sign in' : 'Create account';
+  document.getElementById('switchTxt').textContent = loginMode ? 'No account? ' : 'Already have one? ';
+  document.getElementById('switchLnk').textContent = loginMode ? 'Create one free' : 'Sign in';
+  document.getElementById('unameWrap').style.display = loginMode ? 'none' : 'block';
+  document.getElementById('authErr').style.display = 'none';
+  prevUname();
+}
+function showLogin()  { if (!loginMode) flipAuth(); showPage('auth'); history.replaceState(null, '', location.pathname); }
+function showSignup() { if (loginMode) flipAuth();  showPage('auth'); history.replaceState(null, '', location.pathname); }
+
+function prevUname() {
+  var v = document.getElementById('unameIn').value || 'yourname';
+  document.getElementById('unamePrev').textContent = profileUrl(v);
+}
+
+function doAuth() {
+  var email = document.getElementById('authEmail').value.trim();
+  var pass  = document.getElementById('authPass').value;
+  document.getElementById('authErr').style.display = 'none';
+  if (!email || !pass) { showAuthErr('Please fill in all fields.'); return; }
+  var users = getUsers();
+  if (loginMode) {
+    if (!users[email]) { showAuthErr('No account found with that email.'); return; }
+    if (users[email].pw !== btoa(pass)) { showAuthErr('Incorrect password.'); return; }
+    CU = { email: email, username: users[email].username };
+  } else {
+    var uname = document.getElementById('unameIn').value.trim().toLowerCase();
+    if (!uname) { showAuthErr('Please choose a username.'); return; }
+    if (!/^[a-z0-9_]{3,24}$/.test(uname)) { showAuthErr('Username: 3-24 characters, letters, numbers, underscore only.'); return; }
+    if (users[email]) { showAuthErr('That email is already registered.'); return; }
+    var taken = Object.values(users).some(function(u) { return u.username === uname; });
+    if (taken) { showAuthErr('That username is already taken.'); return; }
+    users[email] = { pw: btoa(pass), username: uname };
+    putUsers(users);
+    CU = { email: email, username: uname };
+    P = { name: uname, bio: '', pfp: '', banner: '', music: '', musicFile: '', links: [], bg: '#08090c', tc: '#f8f9fc', bc: '#3b6fff' };
+    storeData();
+  }
+  sessionStorage.setItem('ph_sess', JSON.stringify(CU));
+  loadData(); showDash();
+}
+
+function showAuthErr(m) {
+  var e = document.getElementById('authErr');
+  e.textContent = m; e.style.display = 'block';
+}
+
+function loadDemo() {
+  CU = { email: '__demo__@profilehub', username: 'alex_creates' };
+  P = {
+    name: 'Alex Rivera', bio: 'Content creator. Gamer. Making videos and loving life.',
+    pfp: '', banner: '', music: '', musicFile: '',
+    links: [
+      { title: 'YouTube', url: 'https://youtube.com' },
+      { title: 'Twitch',  url: 'https://twitch.tv' },
+      { title: 'Twitter', url: 'https://twitter.com' },
+      { title: 'Discord', url: 'https://discord.gg' }
+    ],
+    bg: '#08090c', tc: '#f8f9fc', bc: '#3b6fff'
+  };
+  sessionStorage.setItem('ph_sess', JSON.stringify(CU));
+  syncForm(); hasUnsaved = false; updUnsaved(); showDash();
+}
+
+function doLogout() {
+  if (hasUnsaved && !confirm('You have unsaved changes. Log out anyway?')) return;
+  stopDashAudio(); stopPubAudio();
+  sessionStorage.removeItem('ph_sess');
+  CU = null; hasUnsaved = false;
+  P = { name:'', bio:'', pfp:'', banner:'', music:'', musicFile:'', links:[], bg:'#08090c', tc:'#f8f9fc', bc:'#3b6fff' };
+  updUnsaved();
+  document.getElementById('navAuth').style.display = 'flex';
+  document.getElementById('navDash').style.display = 'none';
+  history.replaceState(null, '', location.pathname);
+  showPage('home');
+}
+
+// ════════════════════════════════════════
+//  SAVE / DISCARD
+// ════════════════════════════════════════
+function markDirty() {
+  if (!hasUnsaved) { hasUnsaved = true; updUnsaved(); }
+}
+function updUnsaved() {
+  var b = document.getElementById('unsaved');
+  if (hasUnsaved && CU) { b.classList.add('on'); } else { b.classList.remove('on'); }
+}
+function doSave() {
+  collectForm(); storeData();
+  hasUnsaved = false; updUnsaved();
+  renderNavPfp(); updShareDisp();
+  var url = profileUrl(CU.username);
+  navigator.clipboard.writeText(url)
+    .then(function()  { showToast('Saved. Link copied to clipboard.', 'ok'); })
+    .catch(function() { showToast('Saved.', 'ok'); });
+}
+function doDiscard() {
+  if (!confirm('Discard all unsaved changes?')) return;
+  var raw = localStorage.getItem(dkey(CU.email));
+  if (raw) { try { P = Object.assign({}, P, JSON.parse(raw)); } catch(e) {} }
+  syncForm(); hasUnsaved = false; updUnsaved();
+  showToast('Changes discarded.', '');
+}
+function copyLink() {
+  var url = profileUrl(CU ? CU.username : 'username');
+  navigator.clipboard.writeText(url).then(function() { showToast('Link copied.', 'ok'); });
+}
+function copyPubLink() {
+  var url = document.getElementById('pubShareUrl').textContent;
+  navigator.clipboard.writeText(url).then(function() { showToast('Link copied.', 'ok'); });
+}
+window.addEventListener('beforeunload', function(e) {
+  if (hasUnsaved) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// ════════════════════════════════════════
+//  BANNER
+// ════════════════════════════════════════
+function onBanner(e) {
+  var f = e.target.files[0]; if (!f) return;
+  if (f.size > 3*1024*1024) { showToast('Max 3MB for banner.', 'bad'); return; }
+  var r = new FileReader();
+  r.onload = function(ev) { P.banner = ev.target.result; renderBannerDash(); markDirty(); };
+  r.readAsDataURL(f); e.target.value = '';
+}
+function rmBanner() { P.banner = ''; renderBannerDash(); markDirty(); }
+function renderBannerDash() {
+  var img = document.getElementById('bannerImg'), ph = document.getElementById('bannerPh');
+  if (P.banner) { img.src = P.banner; img.style.display = 'block'; ph.style.display = 'none'; }
+  else { img.src = ''; img.style.display = 'none'; ph.style.display = 'block'; }
+}
+
+// ════════════════════════════════════════
+//  AVATAR
+// ════════════════════════════════════════
+function onPfp(e) {
+  var f = e.target.files[0]; if (!f) return;
+  if (f.size > 2*1024*1024) { showToast('Max 2MB for photo.', 'bad'); return; }
+  var r = new FileReader();
+  r.onload = function(ev) { P.pfp = ev.target.result; renderPfpDash(); renderNavPfp(); markDirty(); };
+  r.readAsDataURL(f); e.target.value = '';
+}
+function rmPfp() { P.pfp = ''; renderPfpDash(); renderNavPfp(); markDirty(); }
+function renderPfpDash() {
+  var img = document.getElementById('pfpImg'), icon = document.getElementById('pfpIcon');
+  if (P.pfp) { img.src = P.pfp; img.style.display = 'block'; icon.style.display = 'none'; }
+  else { img.src = ''; img.style.display = 'none'; icon.style.display = 'block'; }
+}
+function renderNavPfp() {
+  var ni = document.getElementById('navPfpImg'), np = document.getElementById('navPfpPh');
+  if (!CU) { ni.classList.remove('vis'); np.classList.remove('vis'); return; }
+  if (P.pfp) { ni.src = P.pfp; ni.classList.add('vis'); np.classList.remove('vis'); }
+  else { ni.classList.remove('vis'); np.classList.add('vis'); }
+}
+
+// ════════════════════════════════════════
+//  MUSIC
+// ════════════════════════════════════════
+var dashPlaying = false;
+function onMusic(e) {
+  var f = e.target.files[0]; if (!f) return;
+  if (f.size > 10*1024*1024) { showToast('Max 10MB for audio.', 'bad'); return; }
+  if (!f.type.startsWith('audio/')) { showToast('Please upload an audio file.', 'bad'); return; }
+  var r = new FileReader();
+  r.onload = function(ev) { P.music = ev.target.result; P.musicFile = f.name; renderMusicDash(); markDirty(); showToast('Music uploaded.', 'ok'); };
+  r.readAsDataURL(f); e.target.value = '';
+}
+function rmMusic() { stopDashAudio(); P.music = ''; P.musicFile = ''; renderMusicDash(); markDirty(); }
+function renderMusicDash() {
+  var a = document.getElementById('dashAudio'), btn = document.getElementById('dashPlayBtn');
+  var nm = document.getElementById('musicName'), hi = document.getElementById('musicHint');
+  if (P.music) {
+    a.src = P.music; nm.textContent = P.musicFile || 'Uploaded track';
+    hi.textContent = 'Click play to preview'; btn.disabled = false;
+  } else {
+    a.src = ''; nm.textContent = 'No music uploaded';
+    hi.textContent = 'Upload a file below to add background music';
+    btn.disabled = true; dashPlaying = false;
+    document.getElementById('dashPlayIcon').setAttribute('points','3,1 13,7 3,13');
+  }
+}
+function toggleDashPlay() {
+  var a = document.getElementById('dashAudio'), icon = document.getElementById('dashPlayIcon');
+  if (!a.src) return;
+  if (dashPlaying) {
+    a.pause(); dashPlaying = false;
+    icon.setAttribute('points','3,1 13,7 3,13');
+  } else {
+    a.play().catch(function() {});
+    dashPlaying = true;
+    icon.setAttribute('points','2,1 6,1 6,13 2,13 M8,1 12,1 12,13 8,13');
+  }
+}
+function setDashVol(v) { document.getElementById('dashAudio').volume = v/100; document.getElementById('dashVolVal').textContent = v + '%'; }
+function stopDashAudio() {
+  var a = document.getElementById('dashAudio'); a.pause(); a.currentTime = 0;
+  document.getElementById('dashPlayIcon').setAttribute('points','3,1 13,7 3,13');
+  dashPlaying = false;
+}
+
+var pubPlaying = false;
+function togglePubPlay() {
+  var a = document.getElementById('pubAudio'), icon = document.getElementById('pubPlayIcon');
+  if (!a.src) return;
+  if (pubPlaying) {
+    a.pause(); pubPlaying = false;
+    icon.setAttribute('points','3,1 13,7 3,13');
+  } else {
+    a.play().catch(function() {});
+    pubPlaying = true;
+    icon.setAttribute('points','2,1 6,1 6,13 2,13 M8,1 12,1 12,13 8,13');
+  }
+}
+function setPubVol(v) { document.getElementById('pubAudio').volume = v/100; }
+function stopPubAudio() {
+  var a = document.getElementById('pubAudio'); a.pause(); a.currentTime = 0;
+  var icon = document.getElementById('pubPlayIcon');
+  if (icon) icon.setAttribute('points','3,1 13,7 3,13');
+  pubPlaying = false;
+}
+
+// ════════════════════════════════════════
+//  LINKS
+// ════════════════════════════════════════
+function renderLinks() {
+  var el = document.getElementById('linksList');
+  if (!P.links.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;padding:8px 0">No links added yet.</div>';
+    return;
+  }
+  el.innerHTML = P.links.map(function(l, i) {
+    return '<div class="link-row" draggable="true"'
+      + ' ondragstart="ds(event,' + i + ')" ondragover="dov(event,' + i + ')"'
+      + ' ondrop="ddrop(event,' + i + ')" ondragleave="dlv(event)" ondragend="dend()">'
+      + '<span class="drag-h" title="Drag to reorder">&#9776;</span>'
+      + '<div class="link-body">'
+      + '<div class="link-name">' + esc(l.title) + '</div>'
+      + '<div class="link-href">' + esc(l.url) + '</div>'
+      + '</div>'
+      + '<div class="link-acts">'
+      + '<button class="ib" onclick="editLink(' + i + ')" title="Edit"><svg viewBox="0 0 14 14"><path d="M9.5 1.5l3 3L4 13H1v-3L9.5 1.5z"/></svg></button>'
+      + '<button class="ib x" onclick="delLink(' + i + ')" title="Delete"><svg viewBox="0 0 14 14"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>'
+      + '</div></div>';
+  }).join('');
+}
+function toggleAddForm() {
+  var f = document.getElementById('addForm');
+  f.classList.toggle('open');
+  if (f.classList.contains('open')) document.getElementById('newTitle').focus();
+}
+function addLink() {
+  var t = document.getElementById('newTitle').value.trim();
+  var u = document.getElementById('newUrl').value.trim();
+  if (!t || !u) { showToast('Enter both title and URL.', 'bad'); return; }
+  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  P.links.push({ title: t, url: u });
+  renderLinks();
+  document.getElementById('newTitle').value = '';
+  document.getElementById('newUrl').value = '';
+  document.getElementById('addForm').classList.remove('open');
+  markDirty();
+}
+function delLink(i) { P.links.splice(i, 1); renderLinks(); markDirty(); }
+function editLink(i) {
+  document.getElementById('editIdx').value   = i;
+  document.getElementById('editTitle').value = P.links[i].title;
+  document.getElementById('editUrl').value   = P.links[i].url;
+  openModal('editModal');
+}
+function saveEdit() {
+  var i = parseInt(document.getElementById('editIdx').value);
+  var t = document.getElementById('editTitle').value.trim();
+  var u = document.getElementById('editUrl').value.trim();
+  if (!t || !u) { showToast('Fill in both fields.', 'bad'); return; }
+  P.links[i] = { title: t, url: u };
+  renderLinks(); closeModal('editModal'); markDirty();
+}
+var dIdx = null;
+function ds(e,i)   { dIdx=i; setTimeout(function(){e.target.classList.add('dragging')},0); }
+function dov(e,i)  { e.preventDefault(); if(i!==dIdx) e.currentTarget.classList.add('dragover'); }
+function dlv(e)    { e.currentTarget.classList.remove('dragover'); }
+function dend()    { dIdx=null; document.querySelectorAll('.link-row').forEach(function(el){el.classList.remove('dragging','dragover')}); }
+function ddrop(e,i){
+  e.preventDefault(); if(dIdx===null||dIdx===i) return;
+  var arr=P.links.slice(); var m=arr.splice(dIdx,1)[0]; arr.splice(i,0,m);
+  P.links=arr; renderLinks(); markDirty();
+}
+
+// ════════════════════════════════════════
+//  APPEARANCE
+// ════════════════════════════════════════
+function buildPresets() {
+  document.getElementById('presets').innerHTML = PRESETS.map(function(c) {
+    return '<div class="pdot" style="background:' + c + '" data-c="' + c + '" onclick="pickPreset(\'' + c + '\')" title="' + c + '"></div>';
+  }).join('');
+}
+function pickPreset(c) { document.getElementById('cBg').value = c; hiPreset(); markDirty(); }
+function hiPreset() {
+  var cur = document.getElementById('cBg').value.toLowerCase();
+  document.querySelectorAll('.pdot').forEach(function(el) { el.classList.toggle('on', el.dataset.c === cur); });
+}
+
+// ════════════════════════════════════════
+//  PUBLIC PROFILE
+// ════════════════════════════════════════
+function viewProfile() {
+  collectForm();
+  renderPub(P, CU ? CU.username : '');
+  showPage('profile');
+  document.getElementById('navAuth').style.display = 'none';
+  document.getElementById('navDash').style.display = 'flex';
+  document.getElementById('navPreviewBtn').style.display = 'none';
+  document.getElementById('navBackBtn').style.display = 'inline-flex';
+  history.replaceState(null, '', profileUrl(CU ? CU.username : ''));
+}
+
+function renderPub(p, username) {
+  var bg = p.bg || '#08090c', tc = p.tc || '#f8f9fc', bc = p.bc || '#3b6fff';
+  var wrap = document.getElementById('pubWrap');
+  wrap.style.background = bg; wrap.style.color = tc;
+
+  var bImg = document.getElementById('pubBannerImg'), bPh = document.getElementById('pubBannerPh');
+  if (p.banner) { bImg.src = p.banner; bImg.style.display = 'block'; bPh.style.display = 'none'; }
+  else { bImg.src=''; bImg.style.display='none'; bPh.style.display='block'; bPh.style.background='linear-gradient(160deg,'+bc+'33,'+bg+')'; }
+
+  var pfpImg = document.getElementById('pubPfpImg'), pfpIcon = document.getElementById('pubPfpIcon');
+  var pfpWrap = document.getElementById('pubPfp');
+  pfpWrap.style.borderColor = bg; pfpWrap.style.background = bg;
+  if (p.pfp) { pfpImg.src=p.pfp; pfpImg.style.display='block'; pfpIcon.style.display='none'; }
+  else { pfpImg.src=''; pfpImg.style.display='none'; pfpIcon.style.display='block'; }
+
+  var nameEl = document.getElementById('pubName');
+  nameEl.textContent = p.name || username || 'User';
+  nameEl.style.color = tc;
+
+  var bioEl = document.getElementById('pubBio');
+  bioEl.textContent = p.bio || ''; bioEl.style.color = tc;
+
+  document.getElementById('pubFooterLink').style.color = bc;
+
+  var linksEl = document.getElementById('pubLinks');
+  if (!p.links || !p.links.length) {
+    linksEl.innerHTML = '<div style="opacity:0.3;font-size:0.875rem">No links added yet.</div>';
+  } else {
+    linksEl.innerHTML = p.links.map(function(l) {
+      return '<a class="pub-link-btn" href="' + esc(l.url) + '" target="_blank" rel="noopener"'
+        + ' style="border-color:' + bc + '44;background:' + bc + '18;color:' + tc + '"'
+        + ' onmouseover="this.style.background=\'' + bc + '30\'"'
+        + ' onmouseout="this.style.background=\'' + bc + '18\'">'
+        + esc(l.title) + '</a>';
+    }).join('');
+  }
+
+  // music
+  var mBar = document.getElementById('pubMusicBar'), pAud = document.getElementById('pubAudio');
+  stopPubAudio();
+  if (p.music) {
+    pAud.src = p.music; pAud.volume = 0.6;
+    document.getElementById('pubTrack').textContent = p.musicFile || 'Background music';
+    document.getElementById('pubVol').value = 60;
+    mBar.style.display = 'flex';
+  } else { pAud.src = ''; mBar.style.display = 'none'; }
+
+  // share bar — show profile link clearly
+  var shareBar = document.getElementById('pubShareBar');
+  var shareUrl = document.getElementById('pubShareUrl');
+  shareUrl.textContent = profileUrl(username);
+  shareBar.style.display = 'flex';
+
+  // redraw trees
+  setTimeout(function() { drawTrees('pubScene', 18, 280); }, 50);
+}
+
+// ════════════════════════════════════════
+//  EXPORT HTML
+// ════════════════════════════════════════
+function exportHTML() {
+  collectForm();
+  var p = P, bg = p.bg||'#08090c', tc = p.tc||'#f8f9fc', bc = p.bc||'#3b6fff';
+  var name = p.name || (CU ? CU.username : 'Profile');
+  var banH = p.banner
+    ? '<div style="width:100%;height:220px;overflow:hidden"><img src="' + p.banner + '" style="width:100%;height:220px;object-fit:cover;display:block"></div>'
+    : '<div style="width:100%;height:220px;background:linear-gradient(160deg,' + bc + '33,' + bg + ')"></div>';
+  var pfpH = p.pfp
+    ? '<img src="' + p.pfp + '" style="width:110px;height:110px;border-radius:50%;border:5px solid ' + bg + ';object-fit:cover;margin-top:-55px;margin-bottom:1.25rem;display:block;margin-left:auto;margin-right:auto">'
+    : '<div style="width:110px;height:110px;border-radius:50%;border:5px solid ' + bg + ';background:rgba(255,255,255,0.06);margin-top:-55px;margin-bottom:1.25rem;margin-left:auto;margin-right:auto"></div>';
+  var lsH = (p.links||[]).map(function(l) {
+    return '<a href="' + l.url + '" target="_blank" rel="noopener" style="display:block;padding:15px 28px;border-radius:10px;border:1px solid ' + bc + '44;background:' + bc + '18;color:' + tc + ';text-decoration:none;font-size:0.95rem;font-weight:500;text-align:center;margin-bottom:10px">' + l.title + '</a>';
+  }).join('');
+  var musH = p.music ? ('<div id="mb" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(8,9,12,0.94);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.12);border-radius:50px;padding:9px 18px 9px 10px;display:flex;align-items:center;gap:12px;z-index:200;max-width:min(320px,90vw)">'
+    + '<button id="pb" onclick="tog()" style="width:32px;height:32px;border-radius:50%;border:none;background:' + bc + ';color:#fff;cursor:pointer;font-size:1rem">&#9654;</button>'
+    + '<span style="font-size:0.75rem;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:' + tc + '">' + (p.musicFile||'Music') + '</span>'
+    + '<input type="range" min="0" max="100" value="60" oninput="document.getElementById(\'au\').volume=this.value/100" style="width:68px;accent-color:' + bc + '">'
+    + '<audio id="au" loop src="' + p.music + '"></audio></div>'
+    + '<script>var on=false;function tog(){var a=document.getElementById("au"),b=document.getElementById("pb");if(on){a.pause();b.innerHTML="&#9654;";}else{a.play();b.innerHTML="&#9646;&#9646;";}on=!on;}<\/script>') : '';
+
+  var html = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n<title>' + name + '</title>\n'
+    + '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">\n'
+    + '<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:' + bg + ';color:' + tc + ';min-height:100vh}'
+    + '.w{display:flex;flex-direction:column;align-items:center;min-height:100vh;position:relative}'
+    + '.card{max-width:520px;width:100%;text-align:center;padding:0 1.5rem 5rem}'
+    + 'h1{font-family:"Playfair Display",serif;font-size:1.9rem;font-weight:900;letter-spacing:-0.02em;margin-bottom:0.5rem}'
+    + '.bio{font-size:0.9rem;opacity:0.65;margin-bottom:2rem;line-height:1.8;max-width:380px;margin-left:auto;margin-right:auto}'
+    + '.tr{position:fixed;bottom:0;left:0;right:0;pointer-events:none;z-index:0;overflow:hidden;height:300px}'
+    + '</style></head><body>\n<div class="w">\n' + banH + '\n<div class="card">\n' + pfpH + '\n<h1>' + name + '</h1>\n'
+    + '<div class="bio">' + (p.bio||'') + '</div>\n' + lsH + '\n<div style="margin-top:3.5rem;font-size:0.72rem;opacity:0.2">Powered by ProfileHub</div>\n</div>\n</div>\n'
+    + musH + '\n<div class="tr"><svg width="100%" height="300" viewBox="0 0 1400 300" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg"><g fill="rgba(255,255,255,0.05)">'
+    + '<polygon points="70,300 70,80 40,180 100,180"/><polygon points="70,300 70,120 50,200 90,200"/>'
+    + '<polygon points="220,300 220,50 185,160 255,160"/><polygon points="220,300 220,90 200,190 240,190"/>'
+    + '<polygon points="380,300 380,100 345,200 415,200"/>'
+    + '<polygon points="560,300 560,60 520,185 600,185"/><polygon points="560,300 560,110 535,210 585,210"/>'
+    + '<polygon points="740,300 740,80 705,185 775,185"/>'
+    + '<polygon points="920,300 920,55 880,170 960,170"/><polygon points="920,300 920,100 895,200 945,200"/>'
+    + '<polygon points="1100,300 1100,85 1060,190 1140,190"/>'
+    + '<polygon points="1280,300 1280,70 1245,175 1315,175"/><polygon points="1280,300 1280,115 1255,210 1305,210"/>'
+    + '</g></svg></div>\n</body></html>';
+
+  var blob = new Blob([html], { type: 'text/html' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'index.html'; a.click();
+  showToast('HTML file downloaded.', 'ok');
+}
+
+// ════════════════════════════════════════
+//  PAGE ROUTING
+// ════════════════════════════════════════
+function showPage(n) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('page-' + n).classList.add('active');
+}
+function showDash() {
+  stopPubAudio();
+  showPage('dashboard');
+  document.getElementById('navAuth').style.display = 'none';
+  document.getElementById('navDash').style.display = 'flex';
+  document.getElementById('navPreviewBtn').style.display = 'inline-flex';
+  document.getElementById('navBackBtn').style.display = 'none';
+  document.getElementById('dashUser').textContent = '@' + (CU ? CU.username : '');
+  history.replaceState(null, '', location.pathname);
+  renderNavPfp();
+}
+function toDash() { showDash(); }
+function goHome() {
+  if (CU) { showDash(); return; }
+  stopPubAudio();
+  showPage('home');
+  document.getElementById('navAuth').style.display = 'flex';
+  document.getElementById('navDash').style.display = 'none';
+  history.replaceState(null, '', location.pathname);
+}
+
+// ════════════════════════════════════════
+//  MODAL / UTILS
+// ════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('on'); }
+function closeModal(id) { document.getElementById(id).classList.remove('on'); }
+document.querySelectorAll('.overlay').forEach(function(el) {
+  el.addEventListener('click', function(e) { if (e.target === el) el.classList.remove('on'); });
+});
+function cntBio() { document.getElementById('bioCount').textContent = document.getElementById('fBio').value.length; }
+var tT;
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = type ? 'on ' + type : 'on';
+  clearTimeout(tT);
+  tT = setTimeout(function() { t.className = ''; }, 3000);
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
